@@ -23,4 +23,4 @@ Input projection|.
 
 ##### See Also
 
-[ttest_app](https://github.com/tercen/Venn_diag_shiny_operator)
+[Venn_diag_shiny_operator](https://github.com/tercen/Venn_diag_shiny_operator)
