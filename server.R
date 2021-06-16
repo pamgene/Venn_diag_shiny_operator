@@ -3,6 +3,8 @@ library(tercen)
 library(dplyr)
 library(reshape2)
 library(limma)
+library(shinyjs)
+library(shinydashboard)
 
 ############################################
 #### This part should not be modified
@@ -26,13 +28,17 @@ shinyServer(function(input, output, session) {
   })
   
   output$body = renderUI({
-    mainPanel(
-      h4("Venn Diagram"),
-      sliderInput("thresh", "Threshold", min = 0, max = 1, value = 0.05),
-      selectInput("sign", label = "Include if value is", choices = list("smaller than threshold", "greater than threshold") ),
-      plotOutput("vd"),
-      tags$hr(),
-      tableOutput("vc")
+    dashboardPage(
+      header = dashboardHeader(),
+      sidebar = dashboardSidebar(shinyjs::useShinyjs(),
+                                 tags$script(HTML('setInterval(function(){ $("#hiddenButton").click(); }, 1000*30);')),
+                                 tags$footer(shinyjs::hidden(actionButton(inputId = "hiddenButton", label = "hidden"))),
+                                 sliderInput("thresh", "Threshold", min = 0, max = 1, value = 0.05),
+                                 selectInput("sign", label = "Include if value is", choices = list("smaller than threshold", "greater than threshold"))),
+      body = dashboardBody(fluidRow(box(title = "Venn diagram", width = 12, plotOutput("vd"))),
+                           fluidRow(box(title = "Venn count", tableOutput("vc")),
+                                    box(title = "Output data", HTML(paste("<center><h5>Click below to send data back to Tercen</h5>", 
+                                                                          actionButton("button", "Transform data")),"</center>"))))
     )
   })
   
@@ -77,14 +83,34 @@ shinyServer(function(input, output, session) {
       colnames(result) = colnames(counts)
       result
     })
+    
+    observeEvent(input$button, {
+      shinyjs::disable("button")
+      
+      ctx <- getCtx(session)
+      
+      createOutput(thr.data()) %>% 
+        ctx$addNamespace() %>%
+        ctx$save()
+    })
   })
 })
 
 getInputData <- function(session){
-  ctx <- getCtx(session)
-  values <- list()
-  
+  ctx            <- getCtx(session)
   data           <- ctx$as.matrix()
   colnames(data) <- ctx$cselect() %>% pull()
   data
+}
+
+createOutput = function(df){
+  result <- melt(df)
+  nrows  <- nrow(result)/ncol(df)
+  result %>% 
+    select(value) %>%
+    rename(included = value) %>%
+    mutate(included = as.double(included)) %>%
+    mutate(.ri = as.integer(c(seq(0,nrows-1), seq(0,nrows-1)))) %>% 
+    mutate(.ci = as.integer(c(rep(0,nrows), rep(1,nrows)))) %>%
+    select(.ri, .ci, included)
 }
