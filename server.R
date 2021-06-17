@@ -33,8 +33,8 @@ shinyServer(function(input, output, session) {
       sidebar = dashboardSidebar(shinyjs::useShinyjs(),
                                  tags$script(HTML('setInterval(function(){ $("#hiddenButton").click(); }, 1000*30);')),
                                  tags$footer(shinyjs::hidden(actionButton(inputId = "hiddenButton", label = "hidden"))),
-                                 sliderInput("thresh", "Threshold", min = 0, max = 1, value = 0.05),
-                                 selectInput("sign", label = "Include if value is", choices = list("smaller than threshold", "greater than threshold"))),
+                                 sliderInput("thresh", getSelectLabel("Threshold"), min = 0, max = 1, value = 0.05),
+                                 selectInput("sign", getSelectLabel("Include if value is"), choices = list("smaller than threshold", "greater than threshold"))),
       body = dashboardBody(fluidRow(box(title = "Venn diagram", width = 12, plotOutput("vd"))),
                            fluidRow(box(title = "Venn count", tableOutput("vc")),
                                     box(title = "Output data", HTML(paste("<center><h5>Click below to send data back to Tercen</h5>", 
@@ -113,4 +113,8 @@ createOutput = function(df){
     mutate(.ri = as.integer(c(seq(0,nrows-1), seq(0,nrows-1)))) %>% 
     mutate(.ci = as.integer(c(rep(0,nrows), rep(1,nrows)))) %>%
     select(.ri, .ci, included)
+}
+
+getSelectLabel <- function(label) {
+  shiny::HTML(paste0("<p><span style='color: black'>", label, "</span></p>"))
 }
