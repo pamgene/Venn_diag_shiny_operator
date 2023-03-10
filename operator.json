@@ -3,6 +3,6 @@
   "description": "Creates a Venn diagram in a shiny application.",
   "tags": ["venn", "pamgene"],
   "authors": ["tercen"],
-  "urls": ["https://github.com/tercen/Venn_diag_shiny_operator"],
-  "isViewOnly": false
+  "urls": ["https://github.com/pamgene/Venn_diag_shiny_operator"],
+  "isViewOnly": [false]
 }
